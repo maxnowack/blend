@@ -1,0 +1,5 @@
+dependencies:
+- repo: git@github.com:maxnowack/test.git
+  hash: 80d123207f725842fe0c5d9842a9ad9fa76eb0f1
+  remote_path: folderdep
+  local_path: tmp
