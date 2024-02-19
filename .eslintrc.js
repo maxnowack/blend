@@ -13,13 +13,10 @@ module.exports = {
   plugins: [
     'prefer-object-spread',
     '@typescript-eslint',
-    'jest',
   ],
   env: {
     commonjs: true,
     node: true,
-    mocha: true,
-    'jest/globals': true,
   },
   settings: {
     'import/resolver': {
