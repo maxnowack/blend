@@ -1,6 +1,22 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended"
+    "config:base"
+  ],
+  "lockFileMaintenance": {
+    "enabled": true
+  },
+  "branchNameStrict": true,
+  "labels": ["dependencies"],
+  "rebaseWhen": "conflicted",
+  "automerge": true,
+  "platformAutomerge": true,
+  "automergeType": "pr",
+  "dependencyDashboard": false,
+  "packageRules": [
+    {
+      "matchDepTypes": ["devDependencies"],
+      "addLabels": ["tooling"]
+    }
   ]
 }

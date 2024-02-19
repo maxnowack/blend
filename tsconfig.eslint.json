@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "exclude": [],
+  "include": [
+    ".eslintrc.js",
+    "docs/.vitepress/config.mts",
+    "**/*.spec.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.js",
+  ]
+}
