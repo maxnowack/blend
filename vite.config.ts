@@ -23,7 +23,15 @@ export default defineConfig({
     },
     rollupOptions: {
       external: [
+        'node:fs',
+        'node:path',
+        'node:child_process',
+        'os',
+        'path',
         'fs',
+        'constants',
+        'url',
+        'assert',
       ],
       plugins: [
         typescriptPaths({

@@ -1,4 +1,4 @@
-import { exec, ChildProcess, ExecOptions } from 'child_process'
+import { exec, ChildProcess, ExecOptions } from 'node:child_process'
 
 const childProcesses: ChildProcess[] = []
 process.on('exit', () => {
@@ -6,11 +6,15 @@ process.on('exit', () => {
     cp.kill()
   })
 })
-export default function executeCommand(
-  command: string,
-  options?: ExecOptions,
+interface Options extends ExecOptions {
   outFn?: (data: any) => void,
   errFn?: (data: any) => void,
+  stdoutPipe?: NodeJS.WritableStream,
+  stderrPipe?: NodeJS.WritableStream,
+}
+export default function executeCommand(
+  command: string,
+  options?: Options,
 ) {
   return new Promise<string>((resolve, reject) => {
     const spawn = exec(command, options)
@@ -18,14 +22,16 @@ export default function executeCommand(
     let errString = ''
     let outString = ''
     if (spawn.stdout) {
+      if (options?.stdoutPipe) spawn.stdout.pipe(options.stdoutPipe || process.stdout)
       spawn.stdout.on('data', (chunk) => {
-        if (outFn) outFn(chunk)
+        if (options?.outFn) options.outFn(chunk)
         outString += chunk
       })
     }
     if (spawn.stderr) {
+      if (options?.stderrPipe) spawn.stderr.pipe(options.stderrPipe || process.stderr)
       spawn.stderr.on('data', (chunk) => {
-        if (errFn) errFn(chunk)
+        if (options?.errFn) options.errFn(chunk)
         errString += chunk
       })
     }

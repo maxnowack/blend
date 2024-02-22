@@ -2,11 +2,16 @@
   "name": "blnd",
   "version": "1.0.0",
   "description": "",
+  "type": "module",
   "main": "dist/index.js",
+  "bin": {
+    "blend": "dist/index.mjs"
+  },
   "scripts": {
+    "dev": "node --loader ts-node/esm src/index.ts",
     "prepare": "npm run build && husky install",
     "lint": "eslint . --max-warnings=0",
-    "build": "rimraf dist && vite build",
+    "build": "rimraf dist && vite build && chmod +x dist/index.mjs",
     "type-check": "tsc --noEmit"
   },
   "keywords": [],
@@ -18,7 +23,7 @@
     "@rollup/plugin-typescript": "11.1.6",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^20.11.19",
-    "@types/tmp": "^0.2.6",
+    "@types/temp": "^0.9.4",
     "@typescript-eslint/eslint-plugin": "^7.0.2",
     "@typescript-eslint/parser": "^7.0.2",
     "eslint": "^8.56.0",
@@ -35,11 +40,11 @@
     "typescript": "^5.3.3",
     "vite": "5.1.3",
     "vite-plugin-dts": "3.7.2",
-    "vite-plugin-node-polyfills": "0.21.0",
     "vite-tsconfig-paths": "4.3.1"
   },
   "dependencies": {
     "js-yaml": "^4.1.0",
-    "tmp": "^0.2.1"
+    "p-map": "^7.0.1",
+    "temp": "^0.9.4"
   }
 }

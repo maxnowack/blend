@@ -2,7 +2,7 @@
   "extends": "./tsconfig.json",
   "exclude": [],
   "include": [
-    ".eslintrc.js",
+    ".eslintrc.cjs",
     "docs/.vitepress/config.mts",
     "**/*.spec.ts",
     "**/*.ts",

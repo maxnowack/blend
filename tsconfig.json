@@ -1,14 +1,25 @@
 {
   "compilerOptions": {
-    "target": "es2017",
-    "module": "esnext",
-    "lib": ["esnext", "dom"],
+    "target": "esnext",
     "moduleResolution": "node",
+    "module": "ESNext",
     "esModuleInterop": true,
+    "declaration": true,
+    "rootDirs": ["./src"],
+    "outDir": "./dist",
     "strict": true,
-    "strictNullChecks": true,
-    "resolveJsonModule": true,
-    "skipLibCheck": true,
-    "skipDefaultLibCheck": true
-  }
+    "downlevelIteration": true,
+    "lib": ["es2017", "dom"],
+    "typeRoots": [
+      "node_modules/@types",
+      ".typings"
+    ],
+    "baseUrl": ".",
+    "noErrorTruncation": true,
+  },
+  "include": [
+    "**/*.ts",
+    ".eslintrc.cjs",
+    "vite.config.ts",
+  ]
 }

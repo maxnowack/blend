@@ -1,6 +1,7 @@
-import fs from 'fs'
-import path from 'path'
+import fs from 'node:fs'
+import path from 'node:path'
 import yaml from 'js-yaml'
+import exists from './utils/fileExists.js'
 
 interface Dependency {
   repo: string,
@@ -35,9 +36,6 @@ function extractFirstBlockComment(filePath: string): string | null {
   }
 }
 
-const exists = (filePath: string) =>
-  fs.promises.access(filePath).then(() => true).catch(() => false)
-
 export function parseConfig(yamlString: string): Config {
   return yaml.load(yamlString) as Config
 }
@@ -59,6 +57,11 @@ export function addDependencyIfNotExists(config: Config, dependency: Dependency)
   return newConfig
 }
 export async function getConfig(filePath: string): Promise<Config | null> {
+  if (!(await exists(filePath))) return null
+  if (path.basename(filePath) === 'blend.yml') {
+    const yamlContent = fs.readFileSync(filePath, 'utf-8')
+    return parseConfig(yamlContent)
+  }
   const stats = await fs.promises.stat(filePath)
   if (stats.isDirectory()) {
     const blendYmlPath = path.join(filePath, 'blend.yml')
@@ -71,5 +74,28 @@ export async function getConfig(filePath: string): Promise<Config | null> {
 
   const comment = extractFirstBlockComment(filePath)
   if (comment) return parseConfig(comment)
-  throw new Error(`No YAML found in file at: ${filePath}`)
+  return null
+}
+
+export async function getLocalConfigDir() {
+  return Promise.resolve(process.cwd())
+}
+
+export async function getLocalConfigPath() {
+  return Promise.resolve(path.join(await getLocalConfigDir(), 'blend.yml'))
+}
+
+export async function getLocalConfig() {
+  const localConfigPath = await getLocalConfigPath()
+  return (await getConfig(localConfigPath)) || {
+    name: undefined,
+    description: undefined,
+    hooks: undefined,
+    dependencies: [],
+  }
+}
+
+export async function saveLocalConfig(config: Config) {
+  const localConfigPath = await getLocalConfigPath()
+  await fs.promises.writeFile(localConfigPath, createConfig(config), 'utf-8')
 }

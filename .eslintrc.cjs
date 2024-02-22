@@ -73,6 +73,9 @@ module.exports = {
      * Airbnb
      */
     // Overrides
+    'import/no-extraneous-dependencies': ['error', {
+      devDependencies: ['*.config.ts'],
+    }],
     'arrow-parens': ['error', 'as-needed', { requireForBlockBody: true }],
     'func-names': 'error', // Changed from 'warn' to 'error'.
     'import/no-absolute-path': 'off', // Turned off because we use absolute paths instead of '../'.
