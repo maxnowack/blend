@@ -1,12 +1,15 @@
 {
   "name": "blnd",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
     "blend": "dist/index.mjs"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "dev": "node --loader ts-node/esm src/index.ts",
     "prepare": "npm run build && husky install",
@@ -23,6 +26,10 @@
     "dependencies"
   ],
   "author": "Max Nowack <max.nowack@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maxnowack/blend.git"
+  },
   "license": "MIT",
   "devDependencies": {
     "@commitlint/cli": "18.6.1",
