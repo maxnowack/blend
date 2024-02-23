@@ -1,0 +1,23 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - '!refs/tags/*'
+      - '!*'
+      - v*
+
+permissions:
+  contents: write
+
+jobs:
+  hello_world_job:
+    runs-on: ubuntu-latest
+    name: Create Release
+    steps:
+      - uses: maxnowack/action-release-generator@v1.4.0
+        with:
+          token: "${{ secrets.GITHUB_TOKEN }}"
+          useNameFromRef: 'true'
+          ref: "${{ github.ref }}"
+          badwords: 'ci:,docs:,chore:,chore(deps),fix(deps)'
