@@ -23,7 +23,7 @@ interface RemoveParameters {
   path: string,
 }
 type ScriptParameters = AddParameters | UpdateParameters | CommitParameters | RemoveParameters
-function getParameters(): ScriptParameters {
+function getParameters(): ScriptParameters | null {
   const [type, ...args] = process.argv.slice(2)
 
   if (type === 'add') {
@@ -51,11 +51,20 @@ function getParameters(): ScriptParameters {
     return { type, path }
   }
 
-  throw new Error(`Invalid type: ${type}`)
+  if (type !== 'help' && type !== '--help' && type !== '-h' && type != null) {
+    console.log(`Unknown command: ${type}\n`)
+  }
+  console.log('Usage: blend add <repo> <remotePath> <localPath>')
+  console.log('       blend update')
+  console.log('       blend commit <localPath> <message>')
+  console.log('       blend remove <path>')
+  return null
 }
 
 const start = async () => {
   const parameters = getParameters()
+  if (parameters == null) return
+
   if (parameters.type === 'add') {
     await commands.add(parameters.repo, parameters.remotePath, parameters.localPath)
   } else if (parameters.type === 'update') {
