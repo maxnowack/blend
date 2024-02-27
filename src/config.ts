@@ -43,9 +43,6 @@ export function addDependencyIfNotExists(config: Config, dependency: Dependency)
   const newConfig = { ...config, dependencies: [...config.dependencies || []] }
   if (!newConfig.dependencies.some(dep => dep.localPath === dependency.localPath)) {
     newConfig.dependencies.push(dependency)
-  } else {
-    /* istanbul ignore next -- @preserve */
-    console.log(`Dependency with local path ${dependency.localPath} already exists. Dependency not added.`) // eslint-disable-line no-console
   }
   return newConfig
 }
