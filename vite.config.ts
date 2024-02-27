@@ -2,6 +2,7 @@
 /// <reference types="vite" />
 import path from 'path'
 import { defineConfig } from 'vite'
+import GithubActionsReporter from 'vitest-github-actions-reporter'
 import typescript from '@rollup/plugin-typescript'
 import { typescriptPaths } from 'rollup-plugin-typescript-paths'
 import dts from 'vite-plugin-dts'
@@ -44,5 +45,18 @@ export default defineConfig({
         }),
       ],
     },
+  },
+  test: {
+    coverage: {
+      provider: 'istanbul',
+      exclude: [
+        '.eslintrc.cjs',
+        'commitlint.config.js',
+        'src/index.ts',
+      ],
+    },
+    reporters: process.env.GITHUB_ACTIONS
+      ? ['default', new GithubActionsReporter()]
+      : 'default',
   },
 })

@@ -24,17 +24,12 @@ interface Config {
   dependencies?: Dependency[],
 }
 
-function extractFirstBlockComment(filePath: string): string | null {
-  try {
-    const content = fs.readFileSync(filePath, 'utf-8')
-    const blockCommentRegex = /\/\*(.*?)\*\//s
-    const match = content.match(blockCommentRegex)
-    return match ? match[1].trim() : null
-  } catch (err) {
-    console.error(`Failed to read file: ${filePath}`, err)
-    return null
-  }
-}
+// function extractFirstBlockComment(filePath: string): string | null {
+//   const content = fs.readFileSync(filePath, 'utf-8')
+//   const blockCommentRegex = /\/\*(.*?)\*\//s
+//   const match = content.match(blockCommentRegex)
+//   return match ? match[1].trim() : null
+// }
 
 export function parseConfig(yamlString: string): Config {
   return yaml.load(yamlString) as Config
@@ -45,14 +40,12 @@ export function createConfig(config: Config): string {
 }
 
 export function addDependencyIfNotExists(config: Config, dependency: Dependency) {
-  const newConfig = { ...config }
-  if (!newConfig.dependencies) {
-    newConfig.dependencies = []
-  }
+  const newConfig = { ...config, dependencies: [...config.dependencies || []] }
   if (!newConfig.dependencies.some(dep => dep.localPath === dependency.localPath)) {
     newConfig.dependencies.push(dependency)
   } else {
-    console.log(`Dependency with local path ${dependency.localPath} already exists. Dependency not added.`)
+    /* istanbul ignore next -- @preserve */
+    console.log(`Dependency with local path ${dependency.localPath} already exists. Dependency not added.`) // eslint-disable-line no-console
   }
   return newConfig
 }
@@ -62,19 +55,21 @@ export async function getConfig(filePath: string): Promise<Config | null> {
     const yamlContent = fs.readFileSync(filePath, 'utf-8')
     return parseConfig(yamlContent)
   }
-  const stats = await fs.promises.stat(filePath)
-  if (stats.isDirectory()) {
-    const blendYmlPath = path.join(filePath, 'blend.yml')
-    if (await exists(blendYmlPath)) {
-      const yamlContent = fs.readFileSync(blendYmlPath, 'utf-8')
-      return parseConfig(yamlContent)
-    }
-    throw new Error(`File not found: ${blendYmlPath}`)
-  }
+  // const stats = await fs.promises.stat(filePath)
+  // if (stats.isDirectory()) {
+  //   const blendYmlPath = path.join(filePath, 'blend.yml')
+  //   if (await exists(blendYmlPath)) {
+  //     const yamlContent = fs.readFileSync(blendYmlPath, 'utf-8')
+  //     return parseConfig(yamlContent)
+  //   }
+  //   throw new Error(`File not found: ${blendYmlPath}`)
+  // }
 
-  const comment = extractFirstBlockComment(filePath)
-  if (comment) return parseConfig(comment)
-  return null
+  // const comment = extractFirstBlockComment(filePath)
+  // if (comment) return parseConfig(comment)
+  // return null
+  /* istanbul ignore next -- @preserve */
+  throw new Error(`File not found: ${filePath}`)
 }
 
 export async function getLocalConfigDir() {

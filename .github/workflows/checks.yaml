@@ -1,0 +1,140 @@
+name: Checks
+
+on:
+  push:
+    branches:
+      - main
+      - development
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  preflight:
+    if: ${{ github.event.pull_request.head.ref != 'main' && github.event.pull_request.head.ref != 'development' }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 21.x]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Load node modules cache
+        id: modules-cache
+        uses: actions/cache@v4
+        timeout-minutes: 5
+        continue-on-error: true
+        with:
+          path: |
+            **/node_modules
+          key: ${{ runner.OS }}-modules-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.OS }}-modules-${{ matrix.node-version }}-
+      - name: install modules
+        run: |
+          npm install --no-audit --force --loglevel=error --no-update-notifier
+
+  linting:
+    needs: preflight
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: latest
+      - name: Load node modules cache
+        id: modules-cache
+        uses: actions/cache/restore@v4
+        timeout-minutes: 5
+        continue-on-error: false
+        with:
+          fail-on-cache-miss: true
+          path: |
+            **/node_modules
+          key: ${{ runner.OS }}-modules-20.x-${{ hashFiles('**/package-lock.json') }}
+      - name: linting
+        run: |
+          npm run build
+          npm run lint
+
+  typecheck:
+    needs: preflight
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: latest
+      - name: Load node modules cache
+        id: modules-cache
+        uses: actions/cache/restore@v4
+        timeout-minutes: 5
+        continue-on-error: false
+        with:
+          fail-on-cache-miss: true
+          path: |
+            **/node_modules
+          key: ${{ runner.OS }}-modules-20.x-${{ hashFiles('**/package-lock.json') }}
+      - name: typecheck
+        run: |
+          npm run build
+          npm run type-check
+
+  unit-tests:
+    needs: preflight
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 21.x]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Load node modules cache
+        id: modules-cache
+        uses: actions/cache/restore@v4
+        timeout-minutes: 5
+        continue-on-error: false
+        with:
+          fail-on-cache-miss: true
+          path: |
+            **/node_modules
+          key: ${{ runner.OS }}-modules-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
+      - name: unit testing
+        run: |
+          npm run build
+          npm test -- --coverage run
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  build:
+    needs: preflight
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 21.x]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Load node modules cache
+        id: modules-cache
+        uses: actions/cache/restore@v4
+        timeout-minutes: 5
+        continue-on-error: false
+        with:
+          fail-on-cache-miss: true
+          path: |
+            **/node_modules
+          key: ${{ runner.OS }}-modules-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
+      - name: build package
+        run: |
+          npm run build

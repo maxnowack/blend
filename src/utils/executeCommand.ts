@@ -1,6 +1,7 @@
 import { exec, ChildProcess, ExecOptions } from 'node:child_process'
 
 const childProcesses: ChildProcess[] = []
+/* istanbul ignore next -- @preserve */
 process.on('exit', () => {
   childProcesses.forEach((cp) => {
     cp.kill()

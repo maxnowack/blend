@@ -74,14 +74,21 @@ module.exports = {
      */
     // Overrides
     'import/no-extraneous-dependencies': ['error', {
-      devDependencies: ['*.config.ts'],
+      devDependencies: [
+        '.eslintrc.js',
+        '**/*.test.ts',
+        '**/*.spec.ts',
+        '__tests__/**/*.ts',
+        '*.config.ts',
+        '**/vite.config.ts',
+      ],
     }],
     'arrow-parens': ['error', 'as-needed', { requireForBlockBody: true }],
     'func-names': 'error', // Changed from 'warn' to 'error'.
     'import/no-absolute-path': 'off', // Turned off because we use absolute paths instead of '../'.
     'implicit-arrow-linebreak': 'off', // Turned of because of bullshit
     'no-alert': 'error', // Changed from 'warn' to 'error'.
-    'no-console': 'off', // Changed from 'warn' to 'error'.
+    'no-console': 'error', // Changed from 'warn' to 'error'.
     'no-constant-condition': 'error', // Changed from 'warn' to 'error'.
     'no-underscore-dangle': ['error', { // Make some exceptions for often used fields
       allow: [
