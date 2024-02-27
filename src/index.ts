@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable no-console */
 import temp from 'temp'
 import * as commands from './commands.js'
 
@@ -78,6 +79,6 @@ const start = async () => {
 
 start()
   .catch((err) => {
-    console.error(err)
+    console.error(err.message)
     process.exit(1)
   })

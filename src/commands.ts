@@ -36,28 +36,42 @@ async function cloneRepoAndCheckout(repo: string) {
   }
   return repoCache.get(repo) as string
 }
+export function clearRepoCache() {
+  repoCache.clear()
+}
 
-export async function add(repo: string, remotePath: string, localPath = remotePath) {
+export async function add(
+  repo: string,
+  remotePath: string,
+  localPath = remotePath,
+  addToConfig = true,
+) {
+  console.log(`Adding ${localPath} ...`) // eslint-disable-line no-console
+  const localDir = path.join(await getLocalConfigDir(), localPath)
+  if (await exists(localDir)) {
+    throw new Error(`${localPath} already exists! Please remove it first`)
+  }
+
   const repoPath = await cloneRepoAndCheckout(repo)
   const fullRemotePath = path.join(repoPath, remotePath)
+  if (!(await exists(fullRemotePath))) {
+    throw new Error(`Path ${remotePath} does not exist in the repository`)
+  }
   const commitHash = await latestHash(repoPath)
 
-  // const packageConfig = await getConfig(fullRemotePath)
-  const localConfig = addDependencyIfNotExists(await getLocalConfig(), {
-    repo,
-    hash: commitHash,
-    localPath,
-    remotePath,
-  })
-
-  const localDir = localPath
-    ? path.join(await getLocalConfigDir(), localPath)
-    : await getLocalConfigDir()
   await fs.promises.cp(fullRemotePath, localDir, {
     recursive: true,
   })
 
-  await saveLocalConfig(localConfig)
+  if (addToConfig) {
+    const localConfig = addDependencyIfNotExists(await getLocalConfig(), {
+      repo,
+      hash: commitHash,
+      localPath,
+      remotePath,
+    })
+    await saveLocalConfig(localConfig)
+  }
 }
 
 async function statusCheck(localPath: string): Promise<{
@@ -79,9 +93,10 @@ async function statusCheck(localPath: string): Promise<{
   hasLocalChanges: boolean,
   hasNewerVersion: boolean,
 }> {
+  const localDir = path.join(await getLocalConfigDir(), localPath)
   const localConfig = await getLocalConfig()
   const dependency = localConfig.dependencies?.find(dep => dep.localPath === localPath)
-  const pathExists = await exists(localPath)
+  const pathExists = await exists(localDir)
   if (!dependency) return { found: false, pathExists }
   if (!pathExists) return { found: true, pathExists: false }
 
@@ -89,11 +104,9 @@ async function statusCheck(localPath: string): Promise<{
   const commitHash = await latestHash(repoPath)
   const upToDate = commitHash === dependency.hash
 
+  const hasNewerVersion = !upToDate && await isAncestor(dependency.hash, commitHash, repoPath)
   await checkout(repoPath, dependency.hash)
   const fullRemotePath = path.join(repoPath, dependency.remotePath)
-  const localDir = localPath
-    ? path.join(await getLocalConfigDir(), localPath)
-    : await getLocalConfigDir()
   await fs.promises.cp(localDir, fullRemotePath, {
     recursive: true,
   })
@@ -101,7 +114,6 @@ async function statusCheck(localPath: string): Promise<{
   const hasLocalChanges = await hasChanges(fullRemotePath)
   const branch = getUrlAndBranch(dependency.repo).branch || await remoteDefaultBranch(repoPath)
   await reset(repoPath, branch)
-  const hasNewerVersion = !upToDate && await isAncestor(dependency.hash, commitHash, repoPath)
 
   return {
     found: true,
@@ -115,7 +127,10 @@ async function statusCheck(localPath: string): Promise<{
 export async function update() {
   const localConfig = await getLocalConfig()
   const dependencies = localConfig.dependencies || []
-  console.log(`Updating ${dependencies.length} dependencies ...`)
+  if (dependencies.length === 0) {
+    throw new Error('No dependencies found')
+  }
+  console.log(`Updating ${dependencies.length} dependencies ...`) // eslint-disable-line no-console
   const newDependencies: NonNullable<(typeof localConfig)['dependencies']> = []
   await pMap(dependencies, async (dependency) => {
     const {
@@ -126,34 +141,34 @@ export async function update() {
     } = await statusCheck(dependency.localPath)
 
     if (!pathExists) {
-      console.log(`${dependency.localPath} does not exist. Removing dependency ...`)
+      console.log(`${dependency.localPath} does not exist.`) // eslint-disable-line no-console
+      await add(dependency.repo, dependency.remotePath, dependency.localPath, false)
+      newDependencies.push(dependency)
       return
     }
 
     if (hasLocalChanges) {
       if (hasNewerVersion) {
-        console.log(`${dependency.localPath} has changes and a newer remote version. Please first update to the new remote version manually and start commiting your changes. Skipping ...`)
+        console.log(`${dependency.localPath} has changes and a newer remote version. Please first update to the new remote version manually and start commiting your changes. Skipping ...`) // eslint-disable-line no-console
       } else {
-        console.log(`${dependency.localPath} has changes. Please commit them using 'blend commit ${dependency.localPath} "<commit message>"' Skipping ...`)
+        console.log(`${dependency.localPath} has changes. Please commit them using 'blend commit ${dependency.localPath} "<commit message>"' Skipping ...`) // eslint-disable-line no-console
       }
       newDependencies.push(dependency)
       return
     }
 
     if (upToDate) {
-      console.log(`${dependency.localPath} is up to date. Skipping ...`)
+      console.log(`${dependency.localPath} is up to date. Skipping ...`) // eslint-disable-line no-console
       newDependencies.push(dependency)
       return
     }
 
-    console.log(`Updating ${dependency.localPath} ...`)
+    console.log(`Updating ${dependency.localPath} ...`) // eslint-disable-line no-console
 
     const repoPath = await cloneRepoAndCheckout(dependency.repo)
     const fullRemotePath = path.join(repoPath, dependency.remotePath)
 
-    const localDir = dependency.localPath
-      ? path.join(await getLocalConfigDir(), dependency.localPath)
-      : await getLocalConfigDir()
+    const localDir = path.join(await getLocalConfigDir(), dependency.localPath)
     await fs.promises.cp(fullRemotePath, localDir, {
       recursive: true,
     })
@@ -173,7 +188,7 @@ export async function update() {
 }
 
 export async function commit(localPath: string, message: string) {
-  console.log(`Committing ${localPath} ...`)
+  console.log(`Committing ${localPath} ...`) // eslint-disable-line no-console
   const {
     found,
     pathExists,
@@ -181,23 +196,23 @@ export async function commit(localPath: string, message: string) {
     hasNewerVersion,
   } = await statusCheck(localPath)
 
+  if (!message) {
+    throw new Error('Please provide a commit message')
+  }
+
   if (!pathExists) {
-    console.error(`Path ${localPath} does not exist`)
-    return
+    throw new Error(`Path ${localPath} does not exist`)
   }
   if (!found) {
-    console.error(`Path ${localPath} is not a dependency`)
-    return
+    throw new Error(`Path ${localPath} is not a dependency`)
   }
 
   if (!hasLocalChanges) {
-    console.error(`Path ${localPath} has no changes`)
-    return
+    throw new Error(`Path ${localPath} has no changes`)
   }
 
   if (hasNewerVersion) {
-    console.error(`Path ${localPath} has a newer remote version. Please update to the new remote version manually first`)
-    return
+    throw new Error(`Path ${localPath} has a newer remote version. Please update to the new remote version manually first`)
   }
 
   const localConfig = await getLocalConfig()
@@ -227,19 +242,18 @@ export async function commit(localPath: string, message: string) {
   })
 }
 
-export async function remove(filePath: string) {
+export async function remove(localPath: string) {
+  const filePath = path.join(await getLocalConfigDir(), localPath)
   if (!(await exists(filePath))) {
-    console.error(`${filePath} does not exist`)
-    return
+    throw new Error(`${localPath} does not exist`)
   }
 
-  console.log(`Removing ${filePath} ...`)
+  console.log(`Removing ${localPath} ...`) // eslint-disable-line no-console
   const localConfig = await getLocalConfig()
   localConfig.dependencies = (localConfig.dependencies || [])
-  const dependencyIndex = localConfig.dependencies.findIndex(dep => dep.localPath === filePath)
+  const dependencyIndex = localConfig.dependencies.findIndex(dep => dep.localPath === localPath)
   if (dependencyIndex === -1) {
-    console.error(`${filePath} is not a dependency`)
-    return
+    throw new Error(`${localPath} is not a dependency`)
   }
   localConfig.dependencies.splice(dependencyIndex, 1)
 
