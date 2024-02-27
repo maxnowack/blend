@@ -1,4 +1,13 @@
-# Blend
+<p align="center">
+  <a href="https://github.com/maxnowack/blend/releases"><img src="https://img.shields.io/github/v/release/maxnowack/blend?include_prereleases&label=version&sort=semver" alt="Current Version" /></a>
+  <a href="https://github.com/maxnowack/blend/actions"><img src="https://img.shields.io/github/checks-status/maxnowack/blend/main" alt="Status Checks" /></a>
+  <a href="https://app.codecov.io/gh/maxnowack/blend"><img src="https://img.shields.io/codecov/c/github/maxnowack/blend" alt="Coverage" /></a>
+  <a href="https://github.com/maxnowack/blend/blob/main/LICENSE"><img src="https://img.shields.io/github/license/maxnowack/blend" alt="License" /></a>
+  <a href="https://github.com/maxnowack/blend/stargazers"><img src="https://img.shields.io/github/stars/maxnowack/blend" alt="Stargazers" /></a>
+  <a href="https://www.npmjs.com/package/blnd"><img src="https://img.shields.io/npm/dm/blnd" alt="npm" /></a>
+</p>
+
+# blend
 
 Blend is a lightweight Node.js tool designed to simplify managing dependencies within a project without using Git submodules. It provides an alternative approach for handling external code or resources that are necessary for your project's functionality.
 
