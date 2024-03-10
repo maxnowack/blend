@@ -1,6 +1,5 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import pMap from 'p-map'
 import temp from 'temp'
 import {
   addDependencyIfNotExists,
@@ -132,7 +131,8 @@ export async function update() {
   }
   console.log(`Updating ${dependencies.length} dependencies ...`) // eslint-disable-line no-console
   const newDependencies: NonNullable<(typeof localConfig)['dependencies']> = []
-  await pMap(dependencies, async (dependency) => {
+  await dependencies.reduce(async (promise, dependency) => {
+    await promise
     const {
       pathExists,
       upToDate,
@@ -178,7 +178,7 @@ export async function update() {
       ...dependency,
       hash: commitHash,
     })
-  }, { concurrency: 5 })
+  }, Promise.resolve())
 
   // Write the new config to the local blend.yaml
   await saveLocalConfig({
