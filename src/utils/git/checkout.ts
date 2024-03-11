@@ -1,7 +1,7 @@
 import executeCommand from '../executeCommand.js'
 
 export default async function checkout(repo: string, branch: string) {
-  return executeCommand(`git checkout ${branch}`, {
+  return executeCommand('git', ['checkout', branch], {
     cwd: repo,
   }).catch((error) => {
     if (error.message.includes('did not match any file(s) known to git')) {

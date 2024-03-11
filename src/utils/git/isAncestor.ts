@@ -5,7 +5,12 @@ export default async function isAncestor(
   descendant: string,
   repoPath: string,
 ) {
-  return executeCommand(`git merge-base --is-ancestor ${ancestor} ${descendant}`, {
+  return executeCommand('git', [
+    'merge-base',
+    '--is-ancestor',
+    ancestor,
+    descendant,
+  ], {
     cwd: repoPath,
   })
     .then(() => true)
