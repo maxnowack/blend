@@ -23,22 +23,22 @@ async function setupGit(
   }[] = [],
 ) {
   if (process.env.CI) {
-    await executeCommand('git config --global user.email "test@example.com"')
-    await executeCommand('git config --global user.name "Test User"')
-    await executeCommand('git config --global init.defaultBranch main')
+    await executeCommand('git', ['config', '--global', 'user.email', 'test@example.com'])
+    await executeCommand('git', ['config', '--global', 'user.name', 'Test User'])
+    await executeCommand('git', ['config', '--global', 'init.defaultBranch', 'main'])
   }
 
   const testFolder = temp.mkdirSync()
   const gitFolder = temp.mkdirSync()
 
-  await executeCommand('git init', { cwd: gitFolder })
-  await executeCommand('git config receive.denyCurrentBranch ignore', { cwd: gitFolder })
+  await executeCommand('git', ['init'], { cwd: gitFolder })
+  await executeCommand('git', ['config', 'receive.denyCurrentBranch', 'ignore'], { cwd: gitFolder })
   for (const [file, content] of Object.entries(gitFiles)) {
     await fs.promises.writeFile(path.join(gitFolder, file), content)
   }
 
-  await executeCommand('git add .', { cwd: gitFolder })
-  await executeCommand('git commit -m "initial commit"', { cwd: gitFolder })
+  await executeCommand('git', ['add', '.'], { cwd: gitFolder })
+  await executeCommand('git', ['commit', '-m', 'initial commit'], { cwd: gitFolder })
   const hash = await latestHash(gitFolder)
 
   await fs.promises.writeFile(
@@ -170,8 +170,8 @@ describe('blend cli', () => {
         localPath: 'test.txt',
       }])
       await fs.promises.writeFile(path.join(gitFolder, 'test.txt'), 'test2')
-      await executeCommand('git add .', { cwd: gitFolder })
-      await executeCommand('git commit -m "update"', { cwd: gitFolder })
+      await executeCommand('git', ['add', '.'], { cwd: gitFolder })
+      await executeCommand('git', ['commit', '-m', 'update'], { cwd: gitFolder })
       await expect(update()).resolves.not.toThrow()
 
       const localPath = path.join(testFolder, 'test.txt')
@@ -197,8 +197,8 @@ describe('blend cli', () => {
       }])
       await fs.promises.writeFile(path.join(testFolder, 'test.txt'), 'test2')
       await fs.promises.writeFile(path.join(gitFolder, 'test.txt'), 'test3')
-      await executeCommand('git add .', { cwd: gitFolder })
-      await executeCommand('git commit -m "update"', { cwd: gitFolder })
+      await executeCommand('git', ['add', '.'], { cwd: gitFolder })
+      await executeCommand('git', ['commit', '-m', 'update'], { cwd: gitFolder })
 
       await expect(update()).resolves.not.toThrow()
       await expect(fs.promises.readFile(path.join(testFolder, 'test.txt'), 'utf-8'))
@@ -278,8 +278,8 @@ describe('blend cli', () => {
         localPath: 'test.txt',
       }])
       await fs.promises.writeFile(path.join(gitFolder, 'test.txt'), 'test3')
-      await executeCommand('git add .', { cwd: gitFolder })
-      await executeCommand('git commit -m "update"', { cwd: gitFolder })
+      await executeCommand('git', ['add', '.'], { cwd: gitFolder })
+      await executeCommand('git', ['commit', '-m', 'update'], { cwd: gitFolder })
 
       await fs.promises.writeFile(path.join(testFolder, 'test.txt'), 'test2')
       await expect(commit('test.txt', 'commit')).rejects.toThrowError('has a newer remote version')

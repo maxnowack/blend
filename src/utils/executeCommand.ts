@@ -1,4 +1,4 @@
-import { exec, ChildProcess, ExecOptions } from 'node:child_process'
+import { spawn, ChildProcess, ExecOptions } from 'node:child_process'
 
 const childProcesses: ChildProcess[] = []
 /* istanbul ignore next -- @preserve */
@@ -15,29 +15,30 @@ interface Options extends ExecOptions {
 }
 export default function executeCommand(
   command: string,
+  args: string[],
   options?: Options,
 ) {
   return new Promise<string>((resolve, reject) => {
-    const spawn = exec(command, options)
-    childProcesses.push(spawn)
+    const childProcess = spawn(command, args, options)
+    childProcesses.push(childProcess)
     let errString = ''
     let outString = ''
-    if (spawn.stdout) {
-      if (options?.stdoutPipe) spawn.stdout.pipe(options.stdoutPipe || process.stdout)
-      spawn.stdout.on('data', (chunk) => {
+    if (childProcess.stdout) {
+      if (options?.stdoutPipe) childProcess.stdout.pipe(options.stdoutPipe || process.stdout)
+      childProcess.stdout.on('data', (chunk) => {
         if (options?.outFn) options.outFn(chunk)
         outString += chunk
       })
     }
-    if (spawn.stderr) {
-      if (options?.stderrPipe) spawn.stderr.pipe(options.stderrPipe || process.stderr)
-      spawn.stderr.on('data', (chunk) => {
+    if (childProcess.stderr) {
+      if (options?.stderrPipe) childProcess.stderr.pipe(options.stderrPipe || process.stderr)
+      childProcess.stderr.on('data', (chunk) => {
         if (options?.errFn) options.errFn(chunk)
         errString += chunk
       })
     }
 
-    spawn.on('close', (code) => {
+    childProcess.on('close', (code) => {
       if (code && code > 0) {
         reject(new Error(`command '${command} exited with code ${code}':\n${errString}`))
         return
