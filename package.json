@@ -48,7 +48,7 @@
     "eslint-import-resolver-typescript": "^3.6.1",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-prefer-object-spread": "^1.2.1",
-    "eslint-plugin-vitest": "0.4.1",
+    "eslint-plugin-vitest": "0.5.0",
     "husky": "9.0.11",
     "rimraf": "5.0.5",
     "rollup-plugin-typescript-paths": "1.5.0",
