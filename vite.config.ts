@@ -51,6 +51,10 @@ export default defineConfig({
       provider: 'istanbul',
       exclude: [
         '.eslintrc.cjs',
+        '**/*.spec.ts',
+        '**/dist/**',
+        '**/node_modules/**',
+        '**/vite.config.ts',
         'commitlint.config.js',
         'src/index.ts',
       ],
