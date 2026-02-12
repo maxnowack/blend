@@ -57,7 +57,7 @@
     "typescript": "^5.5.4",
     "vite": "6.4.1",
     "vite-plugin-dts": "4.5.4",
-    "vite-tsconfig-paths": "6.1.0",
+    "vite-tsconfig-paths": "6.1.1",
     "vitest": "^2.0.4",
     "vitest-github-actions-reporter": "^0.11.1"
   },
