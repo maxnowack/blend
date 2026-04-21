@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Create Release
     steps:
-      - uses: maxnowack/action-release-generator@v1.4.0
+      - uses: maxnowack/action-release-generator@v2
         with:
           token: "${{ secrets.GITHUB_TOKEN }}"
           useNameFromRef: 'true'
